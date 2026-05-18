@@ -69,6 +69,24 @@ async def analyze_resume(resume_text: dict):
     """ + text
 
     try:
+        api_key = os.getenv("GEMINI_API_KEY", "dummy_key")
+        if api_key == "dummy_key" or api_key == "":
+            # Return realistic mock data if no API key is provided
+            return {
+                "skills": [
+                    {"name": "Python", "category": "Technical"},
+                    {"name": "Next.js", "category": "Technical"},
+                    {"name": "Communication", "category": "Soft"},
+                    {"name": "Project Management", "category": "Soft"}
+                ],
+                "ats_score": 82,
+                "improvements": [
+                    "Quantify your achievements (e.g., 'Improved performance by 20%')",
+                    "Add more action verbs to the beginning of bullet points",
+                    "Include missing keywords from the target job description"
+                ]
+            }
+
         model = genai.GenerativeModel('gemini-1.5-flash')
         response = model.generate_content(prompt)
         
@@ -97,6 +115,17 @@ async def generate_roadmap(data: dict):
     }}
     """
     try:
+        api_key = os.getenv("GEMINI_API_KEY", "dummy_key")
+        if api_key == "dummy_key" or api_key == "":
+            return {
+               "weeks": [
+                  {"week": 1, "focus": "Fundamentals & Core Concepts", "tasks": ["Complete Python crash course", "Build a simple CLI tool"]},
+                  {"week": 2, "focus": "Advanced Topics", "tasks": ["Learn about generators and decorators", "Solve 5 LeetCode medium problems"]},
+                  {"week": 3, "focus": "Frameworks", "tasks": ["Build a REST API with FastAPI", "Integrate a SQLite database"]},
+                  {"week": 4, "focus": "Project & Deployment", "tasks": ["Deploy the API to Render", "Update resume with this project"]}
+               ]
+            }
+
         model = genai.GenerativeModel('gemini-1.5-flash')
         response = model.generate_content(prompt)
         result_text = response.text.replace("```json", "").replace("```", "").strip()
