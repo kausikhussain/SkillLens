@@ -1,6 +1,6 @@
 import { UserButton } from "@clerk/nextjs";
 import Link from "next/link";
-import { LayoutDashboard, FileText, Target, Map, Zap } from "lucide-react";
+import { LayoutDashboard, FileText, Target, Map, Zap, PenTool } from "lucide-react";
 import { ResumeProvider } from "@/components/resume-context";
 
 export default function DashboardLayout({
@@ -22,6 +22,7 @@ export default function DashboardLayout({
             { name: "Dashboard", icon: LayoutDashboard, href: "/dashboard" },
             { name: "Resume Score", icon: FileText, href: "/dashboard/resume" },
             { name: "JD Matcher", icon: Target, href: "/dashboard/matcher" },
+            { name: "Cover Letter", icon: PenTool, href: "/dashboard/cover-letter" },
             { name: "AI Roadmap", icon: Map, href: "/dashboard/roadmap" },
           ].map((item) => (
             <Link

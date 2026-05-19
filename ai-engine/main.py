@@ -177,3 +177,44 @@ async def match_jd(data: dict):
         return result_json
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Gemini API Error: {str(e)}")
+
+@app.post("/api/generate-cover-letter")
+async def generate_cover_letter(data: dict):
+    resume_text = data.get("resume_text", "")
+    jd_text = data.get("jd_text", "")
+    
+    if not resume_text or not jd_text:
+        raise HTTPException(status_code=400, detail="Resume text and JD text are required")
+        
+    prompt = f"""
+    You are an expert career coach and copywriter.
+    Write a highly professional, engaging, and tailored cover letter.
+    Use the provided resume text to highlight relevant experiences and skills.
+    Align the tone and focus of the letter with the requirements in the job description.
+    Do NOT include placeholder names (like [Your Name] or [Company Name]) if you can infer them, but if you can't, leave generic placeholders.
+    Return the output STRICTLY as a JSON object:
+    {{
+        "cover_letter": "The full text of the cover letter with paragraphs separated by double newlines."
+    }}
+    
+    Resume Text:
+    {resume_text}
+    
+    Job Description:
+    {jd_text}
+    """
+    
+    try:
+        api_key = os.getenv("GEMINI_API_KEY", "dummy_key")
+        if api_key == "dummy_key" or api_key == "":
+            return {
+                "cover_letter": "Dear Hiring Manager,\n\nI am writing to express my strong interest in the open position at your company. With a solid background in software engineering, including hands-on experience with Next.js and Python, I am confident in my ability to contribute effectively to your team.\n\nThroughout my career, I have consistently demonstrated a passion for solving complex problems and delivering high-quality solutions. The requirements outlined in your job description align perfectly with my skill set, particularly my expertise in building scalable web applications.\n\nI would welcome the opportunity to discuss how my background and skills would be a valuable asset to your organization. Thank you for considering my application.\n\nSincerely,\n\n[Your Name]"
+            }
+
+        model = genai.GenerativeModel('gemini-1.5-flash')
+        response = model.generate_content(prompt)
+        result_text = response.text.replace("```json", "").replace("```", "").strip()
+        result_json = json.loads(result_text)
+        return result_json
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Gemini API Error: {str(e)}")
