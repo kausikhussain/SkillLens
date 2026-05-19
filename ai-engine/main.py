@@ -42,7 +42,7 @@ async def upload_resume(file: UploadFile = File(...)):
             text_content += page.extract_text() + "\n"
         
         # In a real app, you would save the text to DB and associate with user.
-        return {"status": "success", "text_length": len(text_content), "content_preview": text_content[:500]}
+        return {"status": "success", "text_length": len(text_content), "content_preview": text_content[:500], "full_text": text_content}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -124,6 +124,50 @@ async def generate_roadmap(data: dict):
                   {"week": 3, "focus": "Frameworks", "tasks": ["Build a REST API with FastAPI", "Integrate a SQLite database"]},
                   {"week": 4, "focus": "Project & Deployment", "tasks": ["Deploy the API to Render", "Update resume with this project"]}
                ]
+            }
+
+        model = genai.GenerativeModel('gemini-1.5-flash')
+        response = model.generate_content(prompt)
+        result_text = response.text.replace("```json", "").replace("```", "").strip()
+        result_json = json.loads(result_text)
+        return result_json
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Gemini API Error: {str(e)}")
+
+@app.post("/api/match-jd")
+async def match_jd(data: dict):
+    resume_text = data.get("resume_text", "")
+    jd_text = data.get("jd_text", "")
+    
+    if not resume_text or not jd_text:
+        raise HTTPException(status_code=400, detail="Resume text and JD text are required")
+        
+    prompt = f"""
+    You are an expert ATS (Applicant Tracking System).
+    Compare the following resume with the job description.
+    Calculate a match score out of 100 based on how well the resume aligns with the JD.
+    Identify matching skills and missing keywords.
+    Provide the output strictly as JSON:
+    {{
+       "match_score": 85,
+       "matching_skills": ["Python", "API Development"],
+       "missing_keywords": ["Kubernetes", "AWS", "Docker"]
+    }}
+    
+    Resume Text:
+    {resume_text}
+    
+    Job Description:
+    {jd_text}
+    """
+    
+    try:
+        api_key = os.getenv("GEMINI_API_KEY", "dummy_key")
+        if api_key == "dummy_key" or api_key == "":
+            return {
+               "match_score": 75,
+               "matching_skills": ["Python", "Next.js", "Teamwork"],
+               "missing_keywords": ["GraphQL", "CI/CD", "System Design"]
             }
 
         model = genai.GenerativeModel('gemini-1.5-flash')

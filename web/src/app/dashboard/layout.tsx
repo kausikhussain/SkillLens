@@ -1,6 +1,7 @@
 import { UserButton } from "@clerk/nextjs";
 import Link from "next/link";
 import { LayoutDashboard, FileText, Target, Map, Zap } from "lucide-react";
+import { ResumeProvider } from "@/components/resume-context";
 
 export default function DashboardLayout({
   children,
@@ -42,7 +43,9 @@ export default function DashboardLayout({
 
       {/* Main Content */}
       <main className="flex-1 overflow-y-auto">
-        {children}
+        <ResumeProvider>
+          {children}
+        </ResumeProvider>
       </main>
     </div>
   );
